@@ -1,0 +1,4 @@
+# Vim specific swap files
+
+*.*~
+*.swp
