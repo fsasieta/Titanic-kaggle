@@ -2,11 +2,12 @@
 
 import csv as csv
 import numpy as np
+import pandas as pd
+import pylab as P
 
 """
 Reads the name of the file into a np array
 as tuple with the header of the list
-
 
 For ease of tinkering, the original header is:
 Survived is a boolean
@@ -14,7 +15,58 @@ Survived is a boolean
     0               1           2       3       4       5       7       8       9       10          11      12
 ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
 
+
+Note: all of these were done for learning purposes and were 
+typed directly from kaggle examples
+visit kaggle.com for the tutorial
+
 """
+
+def first_machine_learning_attempt():
+
+    
+    #instead of using a csv reader, we use a pandas dataframe
+
+    df = pd.read_csv("train.csv", header=0)
+
+    #for i in range(1,4):
+    #   print i, len(df[ (df['Sex'] == "male") & (df['Pclass'] == i)])
+        
+    df['Gender'] = df['Sex'].map( lambda x: x[0].upper() )
+
+    df['Gender'] = df['Sex'].map( { 'female': 0, 'male': 1}).astype(int)
+
+    median_ages = np.zeros((2,3))
+
+    for i in range(0,2):
+         for j in range(0,3):
+              median_ages[i, j] = df[ (df['Gender'] == i) &\
+                                      (df['Pclass'] == j+1) ]['Age'].dropna().median()
+
+    df['AgeFill'] = df['Age']
+
+    for i in range(0,2):
+        for j in range(0,3):
+            df.loc[ (df.Age.isnull()) & (df.Gender == i) & (df.Pclass == j+1), \
+                    'AgeFill'] = median_ages[i, j]
+
+    df['AgeIsNull'] = pd.isnull(df.Age).astype(int)
+    df['FamilySize'] = df['SibSp'] + df['Parch']
+    df['Age*Class'] = df.AgeFill * df.Pclass
+
+    #df['Age*Class'].dropna().hist(bins=16, range=(0,80), alpha = .5)
+    #P.show()
+
+    #print df.dtypes
+    #print df.dtypes[ df.dtypes.map( lambda x: x == 'object')]
+
+    df.drop( ['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Age'], axis = 1)
+
+    train_data = df.values
+
+    print train_data
+
+
 
 def gender_class_and_ticket_price(header, data):
 
@@ -171,7 +223,10 @@ def main():
     #first prediction model only uses gender
     #gender_prediction()
 
-    gender_class_and_ticket_price(header, data)
+    #gender_class_and_ticket_price(header, data)
+
+    
+    first_machine_learning_attempt()
 
 
 if __name__== "__main__":
