@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import pylab as P
 
+from sklearn.ensemble import RandomForestClassifier
+
 """
 Reads the name of the file into a np array
 as tuple with the header of the list
@@ -22,22 +24,21 @@ visit kaggle.com for the tutorial
 
 """
 
-def first_machine_learning_attempt():
+def random_forest_helper(csv_file):
 
-    
     #instead of using a csv reader, we use a pandas dataframe
-
-    df = pd.read_csv("train.csv", header=0)
+    df = pd.read_csv(csv_file, header=0)
 
     #for i in range(1,4):
     #   print i, len(df[ (df['Sex'] == "male") & (df['Pclass'] == i)])
         
-    df['Gender'] = df['Sex'].map( lambda x: x[0].upper() )
+    #df['Gender'] = df['Sex'].map( lambda x: x[0].upper() )
 
     df['Gender'] = df['Sex'].map( { 'female': 0, 'male': 1}).astype(int)
 
     median_ages = np.zeros((2,3))
 
+    #Change the NaN values for the median
     for i in range(0,2):
          for j in range(0,3):
               median_ages[i, j] = df[ (df['Gender'] == i) &\
@@ -57,16 +58,45 @@ def first_machine_learning_attempt():
     #df['Age*Class'].dropna().hist(bins=16, range=(0,80), alpha = .5)
     #P.show()
 
-    #print df.dtypes
-    #print df.dtypes[ df.dtypes.map( lambda x: x == 'object')]
+    passenger_ids = df["PassengerId"].values
 
-    df.drop( ['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Age'], axis = 1)
+    df = df.drop( [ 'Fare', 'PassengerId', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Age' ] , axis = 1)
 
-    train_data = df.values
-
-    print train_data
+    return passenger_ids, df.values
 
 
+#I dropped the "embarked" and "fare"  info for now.
+# haven't decided how to I think it will affect the model.
+def random_forest(train_file, test_file):
+
+    train_ids, train_data = random_forest_helper(train_file)
+    test_ids,  test_data  = random_forest_helper(test_file)
+
+    #sanity check
+    if np.isnan(test_data).any():
+        print "contains a Nan"
+
+    # Random forest -- Machine learning algorithm
+    # Create random forest object
+    forest = RandomForestClassifier(n_estimators = 100)
+
+    #train the data
+    forest = forest.fit(train_data[0::,1::] , train_data[0::,0])
+
+    output = forest.predict(test_data).astype(int)
+
+    prediction_file = open("randomForest_first.csv", 'wb')
+    prediction_file_object = csv.writer(prediction_file)
+    prediction_file_object.writerow(["PassengerId", "Survived"])
+    
+    #for i in output:
+    #    prediction_file_object.writerow([ test_ids[i], output[i] ])
+    #    print test_ids[i], output[i]
+
+    prediction_file_object.writerows(zip(test_ids, output))
+
+    
+    prediction_file.close()
 
 def gender_class_and_ticket_price(header, data):
 
@@ -225,9 +255,9 @@ def main():
 
     #gender_class_and_ticket_price(header, data)
 
-    
-    first_machine_learning_attempt()
+    random_forest("train.csv", "test.csv")
 
+    print "Done"
 
 if __name__== "__main__":
     main()
