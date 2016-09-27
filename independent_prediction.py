@@ -79,9 +79,8 @@ def random_forest_helper(csv_file):
                     'AgeFill'] = median_ages[i, j]
 
     #Fare manipulation goes here
-
-
-
+    df['FareFill'] = df['Fare']
+    df.loc[ df['FareFill'] == 0, 'FareFill' ] == .01
 
 
     df['AgeIsNull'] = pd.isnull(df.Age).astype(int)
@@ -95,6 +94,8 @@ def random_forest_helper(csv_file):
 
     df = df.drop( [ 'Fare', 'PassengerId', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Age' ] , axis = 1)
 
+    print df.head
+
     return passenger_ids, df.values
 
 
@@ -103,14 +104,14 @@ def random_forest_helper(csv_file):
 Starter code for a neural network prediction of titanic survivors.
 I also plan on finishing the random forest predicition by taking fare's into account
 """
-def random_forest(train_file, test_file):
+def random_forest_independent(train_file, test_file):
 
     train_ids, train_data = random_forest_helper(train_file)
     test_ids,  test_data  = random_forest_helper(test_file)
 
     #sanity check
     if np.isnan(test_data).any():
-        print "contains a Nan"
+        print "Contains a Nan"
 
     # Random forest -- Machine learning algorithm
     # Create random forest object
@@ -121,7 +122,7 @@ def random_forest(train_file, test_file):
 
     output = forest.predict(test_data).astype(int)
 
-    prediction_file = open("randomForest_with_fare.csv", 'wb')
+    prediction_file = open("prediction_files/randomForest_with_fare.csv", 'wb')
     prediction_file_object = csv.writer(prediction_file)
     prediction_file_object.writerow(["PassengerId", "Survived"])
     
@@ -137,7 +138,9 @@ def random_forest(train_file, test_file):
 
 def main():
 
-    print "Nothin implmented yet"
+    random_forest_independent("train.csv", "test.csv")
+
+    print "Nothing implmented yet"
 
 
 if __name__== "__main__":
