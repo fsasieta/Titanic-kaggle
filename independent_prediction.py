@@ -80,7 +80,9 @@ def random_forest_helper(csv_file):
 
     #Fare manipulation goes here
     df['FareFill'] = df['Fare']
-    df.loc[ df['FareFill'] == 0, 'FareFill' ] == .01
+
+    if np.argwhere(np.isnan( df['FareFill'] ) ):
+        df['FareFill'][ np.argwhere(np.isnan( df['FareFill'] ) )[0] ] = 0
 
 
     df['AgeIsNull'] = pd.isnull(df.Age).astype(int)
@@ -94,7 +96,7 @@ def random_forest_helper(csv_file):
 
     df = df.drop( [ 'Fare', 'PassengerId', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Age' ] , axis = 1)
 
-    print df.head
+    #print df.head
 
     return passenger_ids, df.values
 
@@ -110,8 +112,7 @@ def random_forest_independent(train_file, test_file):
     test_ids,  test_data  = random_forest_helper(test_file)
 
     #sanity check
-    if np.isnan(test_data).any():
-        print "Contains a Nan"
+    assert not (np.isnan(test_data).any()), "Contains a Nan, python is angry at you."
 
     # Random forest -- Machine learning algorithm
     # Create random forest object
@@ -139,8 +140,6 @@ def random_forest_independent(train_file, test_file):
 def main():
 
     random_forest_independent("train.csv", "test.csv")
-
-    print "Nothing implmented yet"
 
 
 if __name__== "__main__":
